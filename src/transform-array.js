@@ -14,67 +14,29 @@ const { NotImplementedError } = require('../extensions/index.js');
  * 
  */
 function transform(arr) {
-  if (!(arr instanceof Array)) {
-    throw new Error("'arr' parameter must be an instance of the Array!");
+  let newArr = [];
+  if (!Array.isArray(arr)) throw new Error(`'arr' parameter must be an instance of the Array!`);
+  for (let i = 0; i < arr.length; i++) {
+     switch (arr[i]) {
+        case '--discard-next':
+          if (arr.length > i+1) i++;
+          break;
+        case '--discard-prev':
+          if (newArr.length > 0 && newArr[newArr.length - 1] === arr[i - 1] ) newArr.pop();
+           break;
+        case '--double-next':
+          if (arr.length > i+1) newArr.push(arr[i + 1]);
+          break;
+        case '--double-prev':
+          if (arr[i - 1] && arr[i - 2] != '--discard-next') newArr.push(arr[i - 1]);
+          break;
+        default:
+          newArr.push(arr[i]);
+     }
   }
-  const result = [];
-  let skipNext = false;
-  arr.forEach((item, idx) => {
-    if (skipNext) {
-      skipNext = false;
-      return;
-    }
-    switch (item) {
-      case "--discard-prev":
-        if (!result.length) {
-          return;
-        }
-        return result.splice(idx - 1, 1);
-      case "--discard-next":
-        if (idx === arr.length - 1) {
-          return;
-        }
-        return skipNext = true;
-      case "--double-prev":
-        if (!result.length) {
-          return;
-        }
-        return result.push(result.at(-1));
-      case "--double-next":
-        if (idx === arr.length - 1) {
-          return;
-        }
-        return result.push(arr[idx + 1]);
-      default: result.push(item);
-    }
-    // if (item === "--discard-next") {
-    //   result.splice(ind, 2)
-    // }
-    // if (item ==="--discard-prev" && ind === 0 || isNaN(item) && ind === 0) {
-    //   result.splice(ind, 1)
-    // }
-    // if (isNaN(item) && ind === 0) {
-    //   result.splice(ind, 1)
-    // }
-    // if (item ==="--discard-prev") {
-    //   result.splice(ind - 1, 2)
-    // }
-    // if (item === "--double-next") {
-    //   result.splice(ind, 1, ind + 1)
-    // }
-    // if (item === "--double-prev") {
-    //   result.splice(ind, 1, ind - 1)
-    // }
-  });
-  return result
+  return newArr;
 }
-
-// console.log(transform([ '--discard-prev', 1, 2, 3]));
 
 module.exports = {
   transform
 };
-// --discard-next исключает следующий элемент массива из преобразованного массива.
-// --discard-prev исключает предыдущий элемент массива из преобразованного массива.
-// --double-next дублирует следующий элемент массива в преобразованном массиве.
-// --double-prev дублирует предыдущий элемент массива в преобразованном массиве
